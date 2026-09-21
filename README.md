@@ -32,7 +32,7 @@
 
 - [x] 建立環境變數範本
 
-- [ ] 建立 GitHub Repository
+- [x] 建立 GitHub Repository
 
 - [ ] 建立 Docker 開發環境
 
