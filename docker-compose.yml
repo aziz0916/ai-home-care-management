@@ -2,6 +2,7 @@
   postgres:
     image: postgres:16.15-alpine
     restart: unless-stopped
+    command: postgres -c wal_level=logical
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
@@ -20,9 +21,34 @@
       retries: 5
       start_period: 10s
 
+  nocobase:
+    image: nocobase/nocobase:2.1.31-full
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_KEY: ${NOCOBASE_APP_KEY:?NOCOBASE_APP_KEY is required}
+      DB_DIALECT: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:?POSTGRES_DB is required}
+      DB_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      TZ: ${TZ:-Asia/Taipei}
+    ports:
+      - "127.0.0.1:${NOCOBASE_PORT:-13001}:80"
+    volumes:
+      - nocobase_storage:/app/nocobase/storage
+    networks:
+      - backend
+      - app_network
+
 volumes:
   postgres_data:
+  nocobase_storage:
 
 networks:
   backend:
     internal: true
+  app_network:
