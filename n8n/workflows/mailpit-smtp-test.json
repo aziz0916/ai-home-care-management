@@ -1,0 +1,62 @@
+﻿{
+    "name":  "Mailpit SMTP Test",
+    "nodes":  [
+                  {
+                      "parameters":  {
+
+                                     },
+                      "type":  "n8n-nodes-base.manualTrigger",
+                      "typeVersion":  1,
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "id":  "a32776a8-7000-461f-93ae-3af50d9fb7c3",
+                      "name":  "When clicking ‘Execute workflow’"
+                  },
+                  {
+                      "parameters":  {
+                                         "fromEmail":  "system@careflow.local",
+                                         "toEmail":  "caregiver@example.local",
+                                         "subject":  "n8n Mailpit SMTP test",
+                                         "emailFormat":  "text",
+                                         "text":  "This test email was sent successfully from n8n to Mailpit.",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.emailSend",
+                      "typeVersion":  2.1,
+                      "position":  [
+                                       208,
+                                       0
+                                   ],
+                      "id":  "955d29dd-1a86-4694-b20e-36be4dec8c7f",
+                      "name":  "Send an Email"
+                  }
+              ],
+    "pinData":  {
+
+                },
+    "connections":  {
+                        "When clicking ‘Execute workflow’":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Send an Email",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "binaryMode":  "separate"
+                 },
+    "tags":  [
+
+             ]
+}
