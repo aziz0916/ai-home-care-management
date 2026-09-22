@@ -69,3 +69,6 @@ test-results/
 
 # Local Docker overrides
 docker-compose.override.yml
+
+# Track safe PostgreSQL initialization scripts
+!docker/postgres/init/*.sql
