@@ -7,7 +7,7 @@
 
 ## Project Status
 
-目前為 **v1.0.0 Release Candidate**，MVP 功能與主要例外流程均已完成測試。
+目前已發布 **v1.0.0 Initial Portfolio Release**，MVP 功能與主要例外流程均已完成測試。
 
 - [x] Docker Compose 開發環境
 - [x] PostgreSQL、NocoBase、n8n、Mailpit
@@ -16,7 +16,7 @@
 - [x] FlutterFlow 登入、紀錄清單及新增紀錄
 - [x] 載入、空資料、錯誤與重試狀態
 - [x] 320 px 窄螢幕版面測試
-- [ ] 建立 GitHub v1.0.0 Release
+- [x] 建立 GitHub v1.0.0 Release
 
 ## Architecture
 
