@@ -1,0 +1,531 @@
+{
+  "name": "AI居家照護_服務紀錄自動化",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "service-record-created",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a69a28e3-6dc3-4e50-ba17-d32af4ae8f16",
+      "name": "Webhook",
+      "webhookId": "8f5c0a5a-9898-435a-907d-cbd23c80ba86",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "CareFlow Webhook Authentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6221e41c-0e5b-494e-9c3d-c33636e45d69",
+              "name": "record_id",
+              "value": "={{ $json.body.record_id }}",
+              "type": "number"
+            },
+            {
+              "id": "062e0459-568c-46fb-b32a-58738169d848",
+              "name": "client_name",
+              "value": "={{ $json.body.client_name }}",
+              "type": "string"
+            },
+            {
+              "id": "628034a8-b454-4aa5-a7bf-cfe4299de01f",
+              "name": "service_date",
+              "value": "={{ $json.body.service_date }}",
+              "type": "string"
+            },
+            {
+              "id": "19b2ead2-bde3-4b30-8ebd-7fba852d3080",
+              "name": "service_type",
+              "value": "={{ $json.body.service_type }}",
+              "type": "string"
+            },
+            {
+              "id": "facf9e08-dd34-4efa-972f-ca87a2a55b2d",
+              "name": "service_minutes",
+              "value": "={{ $json.body.service_minutes }}",
+              "type": "number"
+            },
+            {
+              "id": "288c449d-1029-4d53-98e5-c01682879db4",
+              "name": "service_notes",
+              "value": "={{ $json.body.service_notes }}",
+              "type": "string"
+            },
+            {
+              "id": "8e5a39ec-1424-426a-bdf9-cc8683dcf012",
+              "name": "fall",
+              "value": "={{ $json.body.fall }}",
+              "type": "boolean"
+            },
+            {
+              "id": "a753c230-44e3-41e1-b514-5e6d4df71b18",
+              "name": "abnormal_description",
+              "value": "={{ $json.body.abnormal_description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "27c16da8-cb8d-4664-97a7-5e1faaa1d7ea",
+      "name": "整理服務紀錄資料"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4d890c8c-029d-408c-9b90-f0f6a9229f8c",
+              "name": "ai_prompt",
+              "value": "={{ `你是居家照護服務紀錄助理。請根據以下資料產生一段專業、客觀、精簡的繁體中文照護摘要，限80字以內。不得虛構資料，也不要提供醫療診斷。\n\n個案：${$json.client_name}\n服務日期：${$json.service_date}\n服務類型：${$json.service_type}\n服務分鐘數：${$json.service_minutes}\n服務內容與備註：${$json.service_notes || '無'}\n是否跌倒：${$json.fall ? '是' : '否'}\n異常說明：${$json.abnormal_description || '無'}\n\n只輸出摘要內容，不要加上「摘要：」等標題。` }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "574c29ee-4bd7-4e90-9967-f291b287949e",
+      "name": "建立AI提示詞"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.ai_prompt }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        624,
+        0
+      ],
+      "id": "e4feadc0-49dd-4af1-b84b-ee2293fd03df",
+      "name": "產生AI照護摘要",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        192
+      ],
+      "id": "171adee0-369c-4522-b104-90f5a0cacb7b",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "82a7bb76-c822-4837-9242-41c79935525b",
+              "name": "record_id",
+              "value": "={{ $('建立AI提示詞').item.json.record_id }}",
+              "type": "number"
+            },
+            {
+              "id": "971e1010-e8e9-4c27-a4b4-72688be40a65",
+              "name": "ai_summary",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        0
+      ],
+      "id": "19a79e6e-ad26-4d48-960b-4f93f9e1f1dd",
+      "name": "整理AI摘要結果"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://nocobase:80/api/service_records:update?filterByTk=' + $('整理AI摘要結果').item.json.record_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('登入NocoBase').item.json.data.token }}"
+            },
+            {
+              "name": "X-Role",
+              "value": "n8n_automation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Authenticator",
+              "value": "basic"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "ai_summary",
+              "value": "={{ $('整理AI摘要結果').item.json.ai_summary }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "a17ae69f-3317-414e-a56b-af3a97b5facd",
+      "name": "回寫AI摘要至NocoBase"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://nocobase:80/api/auth:signIn",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "3433c409-a797-4c73-a2df-b17cc00bab6a",
+      "name": "登入NocoBase",
+      "credentials": {
+        "httpCustomAuth": {
+          "name": "NocoBase n8n Service Login"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6effb839-c390-4c5f-91b2-bebcd76d68c4",
+              "leftValue": "={{ $('整理服務紀錄資料').item.json.fall }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2803db22-8f05-459f-bc87-6129f6105f2c",
+              "leftValue": "={{ $('整理服務紀錄資料').item.json.abnormal_description }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1600,
+        0
+      ],
+      "id": "bcc5e0ae-3bf1-4637-923e-d9cadc7a8ba8",
+      "name": "判斷是否異常"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ba9ab537-a605-4348-9361-1609be88a500",
+              "name": "notification_message",
+              "value": "={{ '⚠️ 居家照護異常通知\\n\\n個案：' + $('整理服務紀錄資料').item.json.client_name + '\\n服務日期：' + $('整理服務紀錄資料').item.json.service_date + '\\n服務類型：' + $('整理服務紀錄資料').item.json.service_type + '\\n是否跌倒：' + ($('整理服務紀錄資料').item.json.fall ? '是' : '否') + '\\n異常說明：' + ($('整理服務紀錄資料').item.json.abnormal_description || '未填寫') + '\\n\\nAI 摘要：' + $('整理AI摘要結果').item.json.ai_summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        -96
+      ],
+      "id": "d767d346-15cb-4823-925f-59d5439335a0",
+      "name": "建立異常通知內容"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  messages: [\n    {\n      type: 'text',\n      text: $json.notification_message\n    }\n  ]\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2016,
+        -96
+      ],
+      "id": "553e0465-dfa5-4866-a781-226ad1336a90",
+      "name": "發送LINE異常通知",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpCustomAuth": {
+          "name": "LINE Messaging API Push"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://nocobase:80/api/service_records:update?filterByTk=' + $('整理AI摘要結果').item.json.record_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('登入NocoBase').item.json.data.token }}"
+            },
+            {
+              "name": "X-Role",
+              "value": "n8n_automation"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Authenticator",
+              "value": "basic"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "alert_sent",
+              "value": "={{ true }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2224,
+        -96
+      ],
+      "id": "bdd95db3-2631-4f3c-b622-1b7f7d4a8f92",
+      "name": "標記異常通知已發送"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "整理服務紀錄資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "整理服務紀錄資料": {
+      "main": [
+        [
+          {
+            "node": "建立AI提示詞",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "建立AI提示詞": {
+      "main": [
+        [
+          {
+            "node": "產生AI照護摘要",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "產生AI照護摘要",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "產生AI照護摘要": {
+      "main": [
+        [
+          {
+            "node": "整理AI摘要結果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "整理AI摘要結果": {
+      "main": [
+        [
+          {
+            "node": "登入NocoBase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "登入NocoBase": {
+      "main": [
+        [
+          {
+            "node": "回寫AI摘要至NocoBase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "回寫AI摘要至NocoBase": {
+      "main": [
+        [
+          {
+            "node": "判斷是否異常",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷是否異常": {
+      "main": [
+        [
+          {
+            "node": "建立異常通知內容",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "建立異常通知內容": {
+      "main": [
+        [
+          {
+            "node": "發送LINE異常通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發送LINE異常通知": {
+      "main": [
+        [
+          {
+            "node": "標記異常通知已發送",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "tags": []
+}
