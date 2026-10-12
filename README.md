@@ -7,7 +7,7 @@
 
 ## Project Status
 
-目前已發布 **v1.0.0 Initial Portfolio Release**，MVP 功能與主要例外流程均已完成測試。
+目前已發布 **v1.1.0 – MVP Hardening & Role-Based Access**；已完成角色權限控管、FlutterFlow 穩定性強化，以及異常事件通知流程驗證。
 
 - [x] Docker Compose 開發環境
 - [x] PostgreSQL、NocoBase、n8n、Mailpit
