@@ -22,12 +22,28 @@
 
 ```mermaid
 flowchart TD
-    A[Flutter App] -->|REST API| B[NocoBase]
-    B --> C[(PostgreSQL)]
-    B -->|服務紀錄 Webhook| D[n8n]
-    D -->|摘要| E[Gemini]
-    D -->|異常通知| F[LINE Messaging API]
-    D -->|回寫摘要與通知狀態| B
+    App["照服員<br/>FlutterFlow App"]
+    Tunnel["Cloudflare Quick Tunnel<br/>NocoBase 對外網址"]
+
+    subgraph Docker["Docker Compose 開發環境"]
+        NocoBase["NocoBase<br/>REST API、資料模型與事件觸發"]
+        DB[("PostgreSQL<br/>clients、service_records")]
+        N8N["n8n<br/>AI 摘要與異常自動化"]
+        Mailpit["Mailpit<br/>測試郵件服務"]
+
+        NocoBase <--> DB
+        NocoBase -->|"新增服務紀錄事件"| N8N
+        N8N -->|"回寫 ai_summary、alert_sent"| NocoBase
+    end
+
+    Gemini["Gemini API<br/>繁體中文照護摘要"]
+    LINE["LINE Messaging API<br/>異常通知"]
+
+    App -->|"登入、查詢、新增、編輯"| Tunnel
+    Tunnel --> NocoBase
+    N8N -->|"生成摘要"| Gemini
+    Gemini -->|"摘要結果"| N8N
+    N8N -->|"fall = true 或<br/>abnormal_description 非空"| LINE
 ```
 
 ## Main Features
