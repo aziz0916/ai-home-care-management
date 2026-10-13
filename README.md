@@ -137,6 +137,14 @@ Android Emulator 連接本機 NocoBase 時，可使用 `http://10.0.2.2:13001`�
 
 ![Create record and records pages](docs/screenshots/create-records-320.png)
 
+## Demo Flow
+
+1. 照服員透過 FlutterFlow App 登入，選擇個案並新增服務紀錄。
+2. NocoBase 儲存資料後觸發 n8n Production Webhook。
+3. n8n 呼叫 Gemini API 生成繁體中文照護摘要，並回寫 `ai_summary`。
+4. 若 `fall = true` 或填有 `abnormal_description`，系統會透過 LINE Messaging API 發送異常通知。
+5. 通知成功後，系統更新 `alert_sent` 狀態，供後續追蹤。
+
 ## Security and Privacy
 
 - Repository 僅使用虛構測試資料。
